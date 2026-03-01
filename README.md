@@ -12,7 +12,7 @@ This project retrieves exchange rates from a public API, processes the data, and
 git clone <repository-url>
 cd weather
 ```
-
+---
 ###2. Sample .env content:
 
 ```bash
@@ -22,17 +22,18 @@ DB_NAME=weather
 DB_USER=postgres
 DB_PASSWORD=twin123
 ```
-
+---
 ###3. Build and run with Docker Compose:
 ```bash
 docker compose up -d --build
 ```
+---
 
 ###4. Run migrations (first time):
 ```bash
 docker compose exec web python manage.py migrate
 ```
-
+---
 ###5. Access the API:
 ```bash
 - Fetch exchange rate:
@@ -60,17 +61,17 @@ FROM requests r
 JOIN responses res ON res.request_id = r.id
 ORDER BY r.id DESC;
 ```
-
+---
 ###To run this query against the Docker database:
 ```bash
 docker compose exec -e PGPASSWORD=twin123 db psql -U postgres -d weather -f - < sql/export_request_history.sql
 ```
-
+---
 Alternatively, you can open a DB shell and paste the query:
 ```bash
 docker compose exec -e PGPASSWORD=twin123 db psql -U postgres -d weather
 ```
-
+---
 ##Requirements
 
 Python 3.8+
