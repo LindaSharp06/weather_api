@@ -13,7 +13,7 @@ git clone <repository-url>
 cd weather
 ```
 ---
-###2. Sample .env content:
+### 2. Sample .env content:
 
 ```bash
 DB_HOST=localhost
@@ -23,18 +23,18 @@ DB_USER=postgres
 DB_PASSWORD=twin123
 ```
 ---
-###3. Build and run with Docker Compose:
+### 3. Build and run with Docker Compose:
 ```bash
 docker compose up -d --build
 ```
 ---
 
-###4. Run migrations (first time):
+### 4. Run migrations (first time):
 ```bash
 docker compose exec web python manage.py migrate
 ```
 ---
-###5. Access the API:
+### 5. Access the API:
 ```bash
 - Fetch exchange rate:
 GET or POST → http://localhost:8000/api/get_exchange_rate/
@@ -62,7 +62,7 @@ JOIN responses res ON res.request_id = r.id
 ORDER BY r.id DESC;
 ```
 ---
-###To run this query against the Docker database:
+### To run this query against the Docker database:
 ```bash
 docker compose exec -e PGPASSWORD=twin123 db psql -U postgres -d weather -f - < sql/export_request_history.sql
 ```
@@ -72,7 +72,7 @@ Alternatively, you can open a DB shell and paste the query:
 docker compose exec -e PGPASSWORD=twin123 db psql -U postgres -d weather
 ```
 ---
-##Requirements
+## Requirements
 
 Python 3.8+
 PostgreSQL
