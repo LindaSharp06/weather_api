@@ -1,0 +1,30 @@
+services:
+  web:
+    build: .
+    command: /bin/sh -c "/app/wait-for-it.sh db:5432 -- python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=weather.settings
+      - DB_HOST=db
+      - DB_NAME=weather
+      - DB_USER=postgres
+      - DB_PASSWORD=twin123
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: weather
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: twin123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:

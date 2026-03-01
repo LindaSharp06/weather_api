@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exchange Rate – Frontend</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        h1 { margin-top: 0; }
+        .card { background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }
+        button { padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 6px; }
+        button:hover { background: #0056b3; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #eee; }
+        .msg { color: #666; }
+        .error { color: #c00; }
+    </style>
+</head>
+<body>
+    <h1>Exchange Rate</h1>
+
+    <div class="card">
+        <h2>1. Get data &amp; 2. Store in database</h2>
+        <p class="msg">Click the button to call <code>get_exchange_rate</code> (fetch from API), save the result to PostgreSQL, then view it below.</p>
+        <button id="fetchBtn">Fetch latest &amp; save</button>
+        <span id="fetchStatus"></span>
+    </div>
+
+    <div class="card">
+        <h2>3. View stored data</h2>
+        <p class="msg">Data saved in the database (requests + responses tables) is shown here.</p>
+        <div id="historyContainer">
+        {% if history %}
+        <table id="historyTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Time</th>
+                    <th>EUR rate</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="historyBody">
+                {% for row in history %}
+                <tr>
+                    <td>{{ row.id }}</td>
+                    <td>{{ row.timestamp }}</td>
+                    <td>{{ row.exchange_rate }}</td>
+                    <td>{{ row.status_code }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="msg" id="historyCount">{{ count }} row(s).</p>
+        {% else %}
+        <p class="msg" id="historyEmpty">No data yet. Click &quot;Fetch latest &amp; save&quot; above.</p>
+        {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function renderHistory(data) {
+            var container = document.getElementById('historyContainer');
+            var count = data.length;
+            if (count === 0) {
+                container.innerHTML = '<p class="msg" id="historyEmpty">No data yet. Click &quot;Fetch latest &amp; save&quot; above.</p>';
+                return;
+            }
+            var table = '<table id="historyTable"><thead><tr><th>#</th><th>Time</th><th>EUR rate</th><th>Status</th></tr></thead><tbody id="historyBody">';
+            for (var i = 0; i < data.length; i++) {
+                var r = data[i];
+                table += '<tr><td>' + r.id + '</td><td>' + r.timestamp + '</td><td>' + r.exchange_rate + '</td><td>' + r.status_code + '</td></tr>';
+            }
+            table += '</tbody></table><p class="msg" id="historyCount">' + count + ' row(s).</p>';
+            container.innerHTML = table;
+        }
+
+        document.getElementById('fetchBtn').onclick = function (e) {
+            e.preventDefault();
+            var btn = this;
+            var status = document.getElementById('fetchStatus');
+            if (btn.disabled) return;
+            btn.disabled = true;
+            status.textContent = ' Fetching…';
+            status.className = '';
+            fetch('/api/get_exchange_rate/', { method: 'GET', headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.error) {
+                        status.textContent = ' Error: ' + data.error;
+                        status.className = 'error';
+                        return;
+                    }
+                    if (data.saved === false) {
+                        status.textContent = ' Fetched but could not save: ' + (data.save_error || 'database error');
+                        status.className = 'error';
+                        return;
+                    }
+                    var eur = data.conversion_rates && data.conversion_rates.EUR;
+                    status.textContent = eur != null ? ' Saved. EUR = ' + eur + ' — updating list…' : ' Saved — updating list…';
+                    status.className = '';
+                    return fetch('/api/exchange_history/?limit=50', { method: 'GET', headers: { 'Accept': 'application/json' } })
+                        .then(function (r) { return r.json(); })
+                        .then(function (resp) {
+                            if (resp.data && Array.isArray(resp.data)) {
+                                renderHistory(resp.data);
+                                status.textContent = eur != null ? ' Saved. EUR = ' + eur + ' — ' + resp.data.length + ' row(s) below.' : ' Saved. ' + resp.data.length + ' row(s) below.';
+                            } else {
+                                status.textContent = ' Saved. Refresh the page to see the list.';
+                            }
+                        })
+                        .catch(function () {
+                            status.textContent = ' Saved. Refresh the page to see the list.';
+                        });
+                })
+                .catch(function (err) {
+                    status.textContent = ' Error: ' + err.message;
+                    status.className = 'error';
+                })
+                .finally(function () { btn.disabled = false; });
+        };
+    </script>
+</body>
+</html>
