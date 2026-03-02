@@ -33,13 +33,23 @@ For Docker, the Compose file sets `DB_HOST=db` and other variables for the web s
 docker compose up -d --build
 ```
 
-### 4. Run migrations (first time)
+### 4. Create the database (if needed)
+
+If you see **"database \"weather\" does not exist"** when running migrate, create the database:
+
+```bash
+docker compose exec db psql -U postgres -c "CREATE DATABASE weather;"
+```
+
+Then run migrations (step 5).
+
+### 5. Run migrations (first time)
 
 ```bash
 docker compose exec web python manage.py migrate
 ```
 
-### 5. Use the API
+### 6. Use the API
 
 - **Fetch and store exchange rate:** `GET` or `POST` → `http://localhost:8000/api/get_exchange_rate/`
 - **View stored history:** `GET` → `http://localhost:8000/api/exchange_history/`
