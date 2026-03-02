@@ -50,6 +50,7 @@ GET → http://localhost:8000/api/exchange_history/
 | 2 | Store data in PostgreSQL with **at least two related tables** and a **foreign key** | **`requests`** (id, timestamp) and **`responses`** (id, **request_id** FK → requests.id, exchange_rate, status_code).                                        |
 | 3 | SQL query with **JOIN** that exports request history and received data              | **`sql/export_request_history.sql`** — JOIN of `requests` and `responses`.                                                                                   |
 | 4 | Logging of connection errors and timeouts to a **separate file**                    | **`api_connection_errors.log`** logs connection issues, timeouts, and other request exceptions.                                                              |
+```
 ```sql
 SELECT
     r.id          AS request_id,
