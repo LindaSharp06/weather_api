@@ -86,15 +86,20 @@ ORDER BY r.id DESC;
 
 **Run against the Docker database:**
 
-```bash
-docker compose exec -e PGPASSWORD=twin123 db psql -U postgres -d weather -f - < sql/export_request_history.sql
-```
+- **Option A (any OS):** Open a psql shell, then paste the query above:
+  ```bash
+  docker compose exec -e PGPASSWORD=twin123 db psql -U postgres -d weather
+  ```
 
-Or open a shell and paste the query:
+- **Linux / macOS / Git Bash:** Run the SQL file:
+  ```bash
+  docker compose exec -e PGPASSWORD=twin123 db psql -U postgres -d weather -f - < sql/export_request_history.sql
+  ```
 
-```bash
-docker compose exec -e PGPASSWORD=twin123 db psql -U postgres -d weather
-```
+- **PowerShell (Windows):** The `<` redirection does not work. Use the shell (Option A) or pipe the file:
+  ```powershell
+  Get-Content sql/export_request_history.sql | docker compose exec -T -e PGPASSWORD=twin123 db psql -U postgres -d weather
+  ```
 
 ---
 
